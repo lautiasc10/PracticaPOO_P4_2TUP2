@@ -3,6 +3,8 @@ namespace Core.Entities;
 public class BankAccount
 {
     private static int s_accountNumberSeed = 1234567890;
+
+    public int Id { get; }
     public string Number { get; }
     public string Owner { get; set; }
     public decimal Balance
@@ -18,14 +20,17 @@ public class BankAccount
         }
     }
 
+
     public BankAccount(string name, decimal initialBalance)
     {
+        Id = s_accountNumberSeed;
         Number = s_accountNumberSeed.ToString();
         s_accountNumberSeed++;
 
         Owner = name;
         MakeDeposit(initialBalance, DateTime.Now, "Initial balance");
     }
+
 
     private List<Transaction> _allTransactions = new List<Transaction>();
 

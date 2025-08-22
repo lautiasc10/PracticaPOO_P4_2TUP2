@@ -7,13 +7,13 @@ namespace Web.Controllers
     [Route("[controller]")]
     public class TransactionController : ControllerBase
     {
-        private static readonly Dictionary<string, BankAccount> Accounts = BankAccountController.Accounts;
-
-        [HttpPost("deposit")]
-        public ActionResult Deposit([FromQuery] string accountNumber, [FromQuery] decimal amount, [FromQuery] string? note = "")
+        [HttpPost("{accountNumber}/deposit")]
+        public ActionResult Deposit([FromRoute] string accountNumber,[FromQuery] decimal amount,[FromQuery] string? note = "")
         {
-            if (!Accounts.TryGetValue(accountNumber, out var account))
-                return NotFound("Cuenta no encontrada.");
+            var account = BankAccountController.accounts.FirstOrDefault(a => a.Number == accountNumber);
+
+            if (account == null)
+                return NotFound($"No se encontró la cuenta con número {accountNumber}.");
 
             try
             {
@@ -24,17 +24,17 @@ namespace Web.Controllers
                 return BadRequest(ex.Message);
             }
 
-            return Ok(new { message = "Depósito realizado con éxito", balance = account.Balance });
+            return Ok(new{message = "Depósito realizado con éxito", balance = account.Balance});
         }
 
-        [HttpPost("withdraw")]
-        public ActionResult Withdraw([FromQuery] string accountNumber, [FromQuery] decimal amount, [FromQuery] string? note = "")
+        [HttpPost("{accountNumber}/withdraw")]
+        public ActionResult Withdraw([FromRoute] string accountNumber,[FromQuery] decimal amount,[FromQuery] string? note = "")
         {
+            var account = BankAccountController.accounts.FirstOrDefault(a => a.Number == accountNumber);
 
-            //Busca un valor según su clave, en este caso el número de cuenta
-            if (!Accounts.TryGetValue(accountNumber, out var account))
-                return NotFound("Cuenta no encontrada.");
-                
+            if (account == null)
+                return NotFound($"No se encontró la cuenta con número {accountNumber}.");
+
             try
             {
                 account.MakeWithdrawal(amount, DateTime.Now, note ?? "Retiro");
@@ -48,14 +48,16 @@ namespace Web.Controllers
                 return BadRequest(ex.Message);
             }
 
-            return Ok(new { message = "Retiro realizado con éxito", balance = account.Balance });
+            return Ok(new{message = "Retiro realizado con éxito",balance = account.Balance});
         }
 
-        [HttpGet("balance")]
-        public ActionResult GetBalance([FromQuery] string accountNumber)
+        [HttpGet("{accountNumber}/balance")]
+        public ActionResult GetBalance([FromRoute] string accountNumber)
         {
-            if (!Accounts.TryGetValue(accountNumber, out var account))
-                return NotFound("Cuenta no encontrada.");
+            var account = BankAccountController.accounts.FirstOrDefault(a => a.Number == accountNumber);
+
+            if (account == null)
+                return NotFound($"No se encontró la cuenta con número {accountNumber}.");
 
             return Ok(new { balance = account.Balance });
         }
